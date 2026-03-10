@@ -1372,17 +1372,14 @@
     currentTab = tab;
     document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const subtitle = document.getElementById('loginSubtitle');
-    subtitle.textContent = tab === 'parent'
+    document.getElementById('loginSubtitle').textContent = tab === 'parent'
       ? "Sign in to view your dancer's account"
       : "Studio owner & instructor access";
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').classList.remove('show');
   }
 
   async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const pass  = document.getElementById('loginPassword').value.trim();
     const btn   = document.getElementById('loginBtn');
     const err   = document.getElementById('loginError');
@@ -1397,38 +1394,40 @@
     btn.disabled = true;
     err.classList.remove('show');
 
-    try {
-      if (currentTab === 'admin') {
-        // Admin login — local check
-        const admin = ADMIN_USERS[email];
-        if (admin && admin.password === pass) {
-          document.getElementById('loginScreen').classList.remove('active');
-          document.getElementById('adminScreen').classList.add('active');
-        } else {
-          err.textContent = 'Invalid admin credentials.';
-          err.classList.add('show');
-        }
+    // Check if this is the admin email first — no Supabase needed
+    const adminUser = ADMIN_USERS[email];
+    if (adminUser) {
+      if (adminUser.password === pass) {
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('adminScreen').classList.add('active');
       } else {
-        // Parent login — Supabase auth
-        const result = await supabaseAuth(email, pass);
-        if (result.access_token) {
-          window._supabaseToken = result.access_token;
-          const userName = result.user?.user_metadata?.full_name || email.split('@')[0];
-          const firstName = userName.split(' ')[0];
-          document.getElementById('parentName').textContent = userName;
-          document.getElementById('parentFirstName').textContent = firstName;
-          document.getElementById('parentAvatar').textContent = firstName[0].toUpperCase();
-          document.getElementById('loginScreen').classList.remove('active');
-          document.getElementById('portalScreen').classList.add('active');
-          // Load real data after login
-          loadParentDashboard();
-        } else {
-          err.textContent = result.error_description || 'Invalid email or password. Please try again.';
-          err.classList.add('show');
-        }
+        err.textContent = 'Incorrect password. Please try again.';
+        err.classList.add('show');
+      }
+      btn.textContent = 'Sign In';
+      btn.disabled = false;
+      return;
+    }
+
+    // Otherwise try Supabase parent login
+    try {
+      const result = await supabaseAuth(email, pass);
+      if (result.access_token) {
+        window._supabaseToken = result.access_token;
+        const userName = result.user?.user_metadata?.full_name || email.split('@')[0];
+        const firstName = userName.split(' ')[0];
+        document.getElementById('parentName').textContent = userName;
+        document.getElementById('parentFirstName').textContent = firstName;
+        document.getElementById('parentAvatar').textContent = firstName[0].toUpperCase();
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('portalScreen').classList.add('active');
+        loadParentDashboard();
+      } else {
+        err.textContent = result.error_description || 'Invalid email or password. Please try again.';
+        err.classList.add('show');
       }
     } catch(e) {
-      err.textContent = 'Connection error. Please try again.';
+      err.textContent = 'Connection error. Please check your internet and try again.';
       err.classList.add('show');
     }
 
@@ -1745,3 +1744,4 @@
         const lines = bulkText.value.split('\n').filter(l => l.trim() && l.includes(',') && l.includes('@'));
         document.getElementById('bulkInviteCount').textContent =
           li
+        
