@@ -804,6 +804,9 @@
       <a class="nav-item" onclick="showAdminPage('admin-students', this)">
         <span class="nav-icon">🩰</span> Students
       </a>
+      <a class="nav-item" onclick="showAdminPage('admin-invites', this)">
+        <span class="nav-icon">✉️</span> Invite Families
+      </a>
       <a class="nav-item" onclick="showAdminPage('admin-invoices', this)">
         <span class="nav-icon">📄</span> Invoices
         <span class="nav-badge">3</span>
@@ -921,6 +924,95 @@
             <tr><td><strong>Ava Johnson</strong></td><td>14</td><td><span class="badge badge-gray">Cloggers</span></td><td>Senior Company, Sr Irish</td><td>Mike Johnson</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
             <tr><td><strong>Mia Williams</strong></td><td>10</td><td><span class="badge badge-gray">Sunshine</span></td><td>Elementary Company, Tumbling I</td><td>Lisa Williams</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
             <tr><td><strong>Zoe Davis</strong></td><td>6</td><td><span class="badge badge-gray">Sunshine</span></td><td>Preschool Dance</td><td>Tom Davis</td><td><span class="badge badge-amber">Pending</span></td><td><button class="btn btn-outline btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN INVITES -->
+    <div class="page" id="page-admin-invites">
+      <div class="page-header">
+        <h1>Invite <em>Families</em></h1>
+        <p>Send secure invite links to parents so they can create their portal account.</p>
+      </div>
+
+      <!-- Stats row -->
+      <div class="cards-row col3" style="margin-bottom:28px;">
+        <div class="stat-card green">
+          <div class="stat-card-label">Accounts Active</div>
+          <div class="stat-card-value green" id="inviteStatActive">0</div>
+          <div class="stat-card-sub">Parents logged in</div>
+          <div class="stat-card-icon">✅</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-card-label">Invites Pending</div>
+          <div class="stat-card-value amber" id="inviteStatPending">0</div>
+          <div class="stat-card-sub">Sent, not yet accepted</div>
+          <div class="stat-card-icon">⏳</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Not Yet Invited</div>
+          <div class="stat-card-value" id="inviteStatNone">0</div>
+          <div class="stat-card-sub">No account created</div>
+          <div class="stat-card-icon">📭</div>
+        </div>
+      </div>
+
+      <!-- Single invite -->
+      <div class="table-card" style="margin-bottom:24px;">
+        <div class="table-card-header">
+          <div class="table-card-title">Send an Invite</div>
+        </div>
+        <div style="padding:24px 28px;">
+          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Enter a parent's name and email. They'll receive a professional email from Color Country Studios with a link to create their password and access the portal.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+            <div class="form-field">
+              <label>Parent Full Name</label>
+              <input type="text" id="inviteName" placeholder="Sarah Smith">
+            </div>
+            <div class="form-field">
+              <label>Email Address</label>
+              <input type="email" id="inviteEmail" placeholder="sarah@email.com">
+            </div>
+            <button class="btn btn-red" style="height:46px;white-space:nowrap;" onclick="sendSingleInvite()">Send Invite ✉️</button>
+          </div>
+          <div id="inviteSingleStatus" style="margin-top:12px;font-size:13px;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Bulk invite -->
+      <div class="table-card" style="margin-bottom:24px;">
+        <div class="table-card-header">
+          <div class="table-card-title">Bulk Invite — All Families at Once</div>
+          <button class="table-card-action" onclick="openBulkInviteModal()">Upload CSV →</button>
+        </div>
+        <div style="padding:24px 28px;">
+          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">To invite all your families at once, paste a list below — one parent per line in the format: <strong>Full Name, email@address.com</strong></p>
+          <textarea id="bulkInviteText" rows="8" style="width:100%;padding:14px;border:1.5px solid var(--border);font-family:monospace;font-size:13px;outline:none;resize:vertical;" placeholder="Sarah Smith, sarah@email.com&#10;Mike Johnson, mike@email.com&#10;Lisa Williams, lisa@email.com&#10;Tom Davis, tom@email.com"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+            <span id="bulkInviteCount" style="font-size:13px;color:var(--gray);">Enter names above to preview</span>
+            <button class="btn btn-red" onclick="sendBulkInvites()">Send All Invites</button>
+          </div>
+          <div id="bulkInviteStatus" style="margin-top:12px;font-size:13px;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Invite history table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">Invite History</div>
+          <button class="table-card-action" onclick="loadInviteHistory()">Refresh</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Parent Name</th>
+            <th>Email</th>
+            <th>Sent</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr></thead>
+          <tbody id="inviteHistoryBody">
+            <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--gray);font-size:13px;">Loading invite history...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1187,6 +1279,55 @@
   </div>
 </div>
 
+<!-- Bulk Invite CSV Modal -->
+<div class="modal-overlay" id="bulkInviteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Upload Family CSV</div>
+      <button class="modal-close" onclick="closeModal('bulkInviteModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Upload a CSV file with two columns: <strong>Name</strong> and <strong>Email</strong>. No header row needed.</p>
+      <div style="border:2px dashed var(--border);padding:40px;text-align:center;cursor:pointer;background:var(--light);" onclick="document.getElementById('csvFileInput').click()">
+        <div style="font-size:32px;margin-bottom:8px;">📂</div>
+        <div style="font-size:14px;font-weight:600;">Click to upload CSV file</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">or drag and drop here</div>
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleCSVUpload(event)">
+      </div>
+      <div id="csvPreview" style="margin-top:16px;display:none;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Preview</div>
+        <div id="csvPreviewList" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('bulkInviteModal')">Cancel</button>
+      <button class="btn btn-red" id="csvSendBtn" disabled onclick="sendCSVInvites()">Send Invites</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Success Modal -->
+<div class="modal-overlay" id="inviteSuccessModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Invites Sent! 🎉</div>
+      <button class="modal-close" onclick="closeModal('inviteSuccessModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:56px;margin-bottom:16px;">✉️</div>
+        <div id="inviteSuccessMessage" style="font-size:15px;line-height:1.7;color:var(--black);"></div>
+        <div style="margin-top:20px;padding:16px;background:var(--light);font-size:13px;color:var(--gray);line-height:1.7;">
+          Each parent receives a <strong>secure link</strong> to create their password. Links expire in <strong>24 hours</strong>. Resend anytime from the Invite History table.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-black" onclick="closeModal('inviteSuccessModal');loadInviteHistory()">View Invite History</button>
+    </div>
+  </div>
+</div>
+
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ── SUPABASE CONFIG ──
   const SUPABASE_URL = 'https://lwfgwemmyedehztlnypj.supabase.co';
@@ -1371,4 +1512,250 @@
 
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overl
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // ── INVITE SYSTEM ────────────────────────────────────────
+
+  // Track CSV parsed families
+  let csvFamilies = [];
+
+  // Send a single invite via Supabase Admin Auth
+  async function sendSingleInvite() {
+    const name  = document.getElementById('inviteName').value.trim();
+    const email = document.getElementById('inviteEmail').value.trim();
+    const status = document.getElementById('inviteSingleStatus');
+
+    if (!name || !email) {
+      showInviteStatus(status, 'error', 'Please enter both a name and email address.');
+      return;
+    }
+    if (!email.includes('@')) {
+      showInviteStatus(status, 'error', 'Please enter a valid email address.');
+      return;
+    }
+
+    showInviteStatus(status, 'loading', `Sending invite to ${email}...`);
+
+    const result = await sendInvite(email, name);
+
+    if (result.success) {
+      showInviteStatus(status, 'success', `✅ Invite sent to ${name} (${email})! They'll receive an email with a link to create their password.`);
+      document.getElementById('inviteName').value = '';
+      document.getElementById('inviteEmail').value = '';
+      updateInviteStats(1, 0);
+      loadInviteHistory();
+    } else {
+      showInviteStatus(status, 'error', `❌ Error: ${result.error}. If this email already has an account, they can log in directly.`);
+    }
+  }
+
+  // Core invite function using Supabase invite endpoint
+  async function sendInvite(email, name) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${window._supabaseToken || SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          data: { full_name: name, invited_by: 'Color Country Studios' }
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Log invite in our invites table
+        await logInvite(email, name);
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || data.error_description || 'Unknown error' };
+      }
+    } catch(e) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  // Log invite to Supabase for history tracking
+  async function logInvite(email, name) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/invite_log`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${window._supabaseToken || SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ email, name, status: 'pending', sent_at: new Date().toISOString() })
+      });
+    } catch(e) { /* non-critical */ }
+  }
+
+  // Send bulk invites from textarea
+  async function sendBulkInvites() {
+    const raw = document.getElementById('bulkInviteText').value.trim();
+    const status = document.getElementById('bulkInviteStatus');
+
+    if (!raw) {
+      showInviteStatus(status, 'error', 'Please enter at least one parent name and email.');
+      return;
+    }
+
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const families = lines.map(line => {
+      const parts = line.split(',').map(p => p.trim());
+      return { name: parts[0] || '', email: parts[1] || '' };
+    }).filter(f => f.name && f.email && f.email.includes('@'));
+
+    if (families.length === 0) {
+      showInviteStatus(status, 'error', 'No valid entries found. Make sure format is: Full Name, email@address.com');
+      return;
+    }
+
+    showInviteStatus(status, 'loading', `Sending ${families.length} invites... please wait.`);
+
+    let sent = 0, failed = 0;
+    for (const f of families) {
+      const result = await sendInvite(f.email, f.name);
+      if (result.success) sent++;
+      else failed++;
+      // Small delay to avoid rate limiting
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    status.style.display = 'none';
+    document.getElementById('inviteSuccessMessage').innerHTML =
+      `<strong>${sent} invite${sent !== 1 ? 's' : ''} sent successfully!</strong>${failed > 0 ? `<br><span style="color:var(--amber)">${failed} failed (those emails may already have accounts).</span>` : ''}`;
+    document.getElementById('inviteSuccessModal').classList.add('open');
+    document.getElementById('bulkInviteText').value = '';
+    updateInviteStats(sent, 0);
+  }
+
+  // Parse CSV file
+  function handleCSVUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l);
+      csvFamilies = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+        return { name: parts[0], email: parts[1] };
+      }).filter(f => f.name && f.email && f.email.includes('@'));
+
+      const preview = document.getElementById('csvPreviewList');
+      preview.innerHTML = csvFamilies.map(f =>
+        `<div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;">
+          <span><strong>${f.name}</strong></span>
+          <span style="color:var(--gray)">${f.email}</span>
+        </div>`
+      ).join('');
+      document.getElementById('csvPreview').style.display = 'block';
+      document.getElementById('csvSendBtn').disabled = csvFamilies.length === 0;
+      document.getElementById('csvSendBtn').textContent = `Send ${csvFamilies.length} Invites`;
+    };
+    reader.readAsText(file);
+  }
+
+  // Send invites from CSV upload
+  async function sendCSVInvites() {
+    if (csvFamilies.length === 0) return;
+    closeModal('bulkInviteModal');
+    let sent = 0, failed = 0;
+    for (const f of csvFamilies) {
+      const result = await sendInvite(f.email, f.name);
+      if (result.success) sent++;
+      else failed++;
+      await new Promise(r => setTimeout(r, 300));
+    }
+    document.getElementById('inviteSuccessMessage').innerHTML =
+      `<strong>${sent} invite${sent !== 1 ? 's' : ''} sent successfully!</strong>${failed > 0 ? `<br><span style="color:var(--amber)">${failed} failed.</span>` : ''}`;
+    document.getElementById('inviteSuccessModal').classList.add('open');
+    csvFamilies = [];
+  }
+
+  // Load invite history from Supabase
+  async function loadInviteHistory() {
+    const tbody = document.getElementById('inviteHistoryBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--gray);font-size:13px;">Loading...</td></tr>';
+    try {
+      const data = await supabaseRequest('invite_log?select=*&order=sent_at.desc');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--gray);font-size:13px;">No invites sent yet. Use the form above to invite your first family!</td></tr>';
+        return;
+      }
+      const pending = data.filter(i => i.status === 'pending').length;
+      const accepted = data.filter(i => i.status === 'accepted').length;
+      document.getElementById('inviteStatPending').textContent = pending;
+      document.getElementById('inviteStatActive').textContent = accepted;
+      document.getElementById('inviteStatNone').textContent = Math.max(0, 150 - data.length);
+
+      tbody.innerHTML = data.map(inv => `
+        <tr>
+          <td><strong>${inv.name || '—'}</strong></td>
+          <td>${inv.email}</td>
+          <td style="font-size:12px;color:var(--gray);">${inv.sent_at ? new Date(inv.sent_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
+          <td><span class="badge ${inv.status === 'accepted' ? 'badge-green' : inv.status === 'pending' ? 'badge-amber' : 'badge-gray'}">${inv.status || 'pending'}</span></td>
+          <td><button class="btn btn-outline btn-sm" onclick="resendInvite('${inv.email}','${inv.name}')">Resend</button></td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--gray);font-size:13px;">Could not load history — run the database setup SQL first.</td></tr>';
+    }
+  }
+
+  // Resend an invite
+  async function resendInvite(email, name) {
+    const result = await sendInvite(email, name);
+    if (result.success) {
+      alert(`✅ Invite resent to ${name} (${email})!`);
+      loadInviteHistory();
+    } else {
+      alert(`❌ Could not resend: ${result.error}`);
+    }
+  }
+
+  // Update stat counters
+  function updateInviteStats(sentDelta, acceptedDelta) {
+    const pendingEl = document.getElementById('inviteStatPending');
+    const noneEl    = document.getElementById('inviteStatNone');
+    if (pendingEl) pendingEl.textContent = (parseInt(pendingEl.textContent) || 0) + sentDelta;
+    if (noneEl)    noneEl.textContent    = Math.max(0, (parseInt(noneEl.textContent) || 0) - sentDelta);
+  }
+
+  // Show status messages in invite forms
+  function showInviteStatus(el, type, message) {
+    el.style.display = 'block';
+    const colors = { success: '#15803D', error: '#DC2626', loading: '#D97706' };
+    el.style.color = colors[type] || '#000';
+    el.textContent = message;
+  }
+
+  // Count lines in bulk textarea for preview
+  document.addEventListener('DOMContentLoaded', () => {
+    const bulkText = document.getElementById('bulkInviteText');
+    if (bulkText) {
+      bulkText.addEventListener('input', () => {
+        const lines = bulkText.value.split('\n').filter(l => l.trim() && l.includes(',') && l.includes('@'));
+        document.getElementById('bulkInviteCount').textContent =
+          lines.length > 0 ? `${lines.length} valid entr${lines.length === 1 ? 'y' : 'ies'} detected` : 'Enter names above to preview';
+      });
+    }
+  });
+
+  function openBulkInviteModal() {
+    document.getElementById('bulkInviteModal').classList.add('open');
+  }
+
+  // Enter key login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginScreen').classList.contains('active')) {
+      handleLogin();
+    }
+  });
