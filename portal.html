@@ -987,7 +987,7 @@
           <button class="table-card-action" onclick="openBulkInviteModal()">Upload CSV →</button>
         </div>
         <div style="padding:24px 28px;">
-          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">To invite all your families at once, paste a list below — one parent per line in the format: <strong>Full Name, email@address.com</strong></p>
+          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">To invite all your families at once, paste a list below — one parent per line in the format: <strong>Full Name, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc8c0ccc4c1edccc9c9dfc8dede83cec2c0">[email&#160;protected]</a></strong></p>
           <textarea id="bulkInviteText" rows="8" style="width:100%;padding:14px;border:1.5px solid var(--border);font-family:monospace;font-size:13px;outline:none;resize:vertical;" placeholder="Sarah Smith, sarah@email.com&#10;Mike Johnson, mike@email.com&#10;Lisa Williams, lisa@email.com&#10;Tom Davis, tom@email.com"></textarea>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
             <span id="bulkInviteCount" style="font-size:13px;color:var(--gray);">Enter names above to preview</span>
@@ -1328,7 +1328,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ── SUPABASE CONFIG ──
   const SUPABASE_URL = 'https://lwfgwemmyedehztlnypj.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3Zmd3ZW1teWVkZWh6dGxueXBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNjU2NTIsImV4cCI6MjA4ODc0MTY1Mn0.I1MuvFcwrGUBaWpkfsBtS1pBqsFOq0vDlK0tzyipfTU';
@@ -1363,7 +1363,7 @@
 
   // ── AUTH DATA (admin fallback only) ──
   const ADMIN_USERS = {
-    'haleyhitesman@gmail.com': { password:'admin123', role:'admin', name:'Heather Mineer', firstName:'Heather' }
+    'haleyhitesman@gmail.com': { password:'Cloggers2026!', role:'admin', name:'Heather Mineer', firstName:'Heather' }
   };
 
   let currentTab = 'parent';
@@ -1744,11 +1744,4 @@
       bulkText.addEventListener('input', () => {
         const lines = bulkText.value.split('\n').filter(l => l.trim() && l.includes(',') && l.includes('@'));
         document.getElementById('bulkInviteCount').textContent =
-          lines.length > 0 ? `${lines.length} valid entr${lines.length === 1 ? 'y' : 'ies'} detected` : 'Enter names above to preview';
-      });
-    }
-  });
-
-  function openBulkInviteModal() {
-    document.getElementById('bulkInviteModal')
-    
+          li
