@@ -1328,7 +1328,7 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   // ── SUPABASE CONFIG ──
   const SUPABASE_URL = 'https://lwfgwemmyedehztlnypj.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3Zmd3ZW1teWVkZWh6dGxueXBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNjU2NTIsImV4cCI6MjA4ODc0MTY1Mn0.I1MuvFcwrGUBaWpkfsBtS1pBqsFOq0vDlK0tzyipfTU';
@@ -1750,12 +1750,4 @@
   });
 
   function openBulkInviteModal() {
-    document.getElementById('bulkInviteModal').classList.add('open');
-  }
-
-  // Enter key login
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('loginScreen').classList.contains('active')) {
-      handleLogin();
-    }
-  });
+    document.getElementById('bulkInviteModal')
