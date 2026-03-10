@@ -424,7 +424,7 @@
     </div>
     <button class="btn-full" onclick="handleLogin()" id="loginBtn">Sign In</button>
     <div class="login-switch">
-      <span id="loginHint" style="font-size:12px;color:#aaa;">Demo: parent@demo.com / demo123 &nbsp;|&nbsp; admin@demo.com / admin123</span>
+      <span id="loginHint" style="font-size:12px;color:#aaa;">Contact the studio if you need help logging in.</span>
     </div>
   </div>
 </div>
@@ -1032,8 +1032,8 @@
 <span class="code-key">STRIPE_SECRET_KEY</span>=<span class="code-val">YOUR_STRIPE_SECRET_KEY</span>
 
 <span class="code-comment"># Database (Supabase)</span>
-<span class="code-key">SUPABASE_URL</span>=<span class="code-val">YOUR_SUPABASE_PROJECT_URL</span>
-<span class="code-key">SUPABASE_ANON_KEY</span>=<span class="code-val">YOUR_SUPABASE_ANON_KEY</span>
+<span class="code-key">SUPABASE_URL</span>=<span class="code-val">https://lwfgwemmyedehztlnypj.supabase.co</span>
+<span class="code-key">SUPABASE_ANON_KEY</span>=<span class="code-val">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...YOUR_KEY</span>
         </div>
       </div>
 
@@ -1187,11 +1187,42 @@
   </div>
 </div>
 
-<script>
-  // ── AUTH DATA ──
-  const USERS = {
-    'parent@demo.com': { password:'demo123', role:'parent', name:'Smith Family', firstName:'Sarah' },
-    'admin@demo.com':  { password:'admin123', role:'admin',  name:'Heather Mineer', firstName:'Heather' }
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── SUPABASE CONFIG ──
+  const SUPABASE_URL = 'https://lwfgwemmyedehztlnypj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3Zmd3ZW1teWVkZWh6dGxueXBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNjU2NTIsImV4cCI6MjA4ODc0MTY1Mn0.I1MuvFcwrGUBaWpkfsBtS1pBqsFOq0vDlK0tzyipfTU';
+
+  // Supabase auth helper
+  async function supabaseRequest(endpoint, options = {}) {
+    const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${window._supabaseToken || SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  async function supabaseAuth(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    return res.json();
+  }
+
+  // ── AUTH DATA (admin fallback only) ──
+  const ADMIN_USERS = {
+    'admin@colorcountrycloggers.com': { password:'admin123', role:'admin', name:'Heather Mineer', firstName:'Heather' }
   };
 
   let currentTab = 'parent';
@@ -1204,46 +1235,84 @@
     subtitle.textContent = tab === 'parent'
       ? "Sign in to view your dancer's account"
       : "Studio owner & instructor access";
-    document.getElementById('loginEmail').value = tab === 'parent' ? 'parent@demo.com' : 'admin@demo.com';
-    document.getElementById('loginPassword').value = tab === 'parent' ? 'demo123' : 'admin123';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').classList.remove('show');
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass  = document.getElementById('loginPassword').value.trim();
     const btn   = document.getElementById('loginBtn');
     const err   = document.getElementById('loginError');
 
+    if (!email || !pass) {
+      err.textContent = 'Please enter your email and password.';
+      err.classList.add('show');
+      return;
+    }
+
     btn.textContent = 'Signing in...';
     btn.disabled = true;
+    err.classList.remove('show');
 
-    setTimeout(() => {
-      const user = USERS[email];
-      if (user && user.password === pass) {
-        err.classList.remove('show');
-        document.getElementById('loginScreen').classList.remove('active');
-        if (user.role === 'parent') {
-          document.getElementById('parentName').textContent = user.name;
-          document.getElementById('parentFirstName').textContent = user.firstName;
-          document.getElementById('parentAvatar').textContent = user.firstName[0];
-          document.getElementById('portalScreen').classList.add('active');
-        } else {
+    try {
+      if (currentTab === 'admin') {
+        // Admin login — local check
+        const admin = ADMIN_USERS[email];
+        if (admin && admin.password === pass) {
+          document.getElementById('loginScreen').classList.remove('active');
           document.getElementById('adminScreen').classList.add('active');
+        } else {
+          err.textContent = 'Invalid admin credentials.';
+          err.classList.add('show');
         }
       } else {
-        err.classList.add('show');
+        // Parent login — Supabase auth
+        const result = await supabaseAuth(email, pass);
+        if (result.access_token) {
+          window._supabaseToken = result.access_token;
+          const userName = result.user?.user_metadata?.full_name || email.split('@')[0];
+          const firstName = userName.split(' ')[0];
+          document.getElementById('parentName').textContent = userName;
+          document.getElementById('parentFirstName').textContent = firstName;
+          document.getElementById('parentAvatar').textContent = firstName[0].toUpperCase();
+          document.getElementById('loginScreen').classList.remove('active');
+          document.getElementById('portalScreen').classList.add('active');
+          // Load real data after login
+          loadParentDashboard();
+        } else {
+          err.textContent = result.error_description || 'Invalid email or password. Please try again.';
+          err.classList.add('show');
+        }
       }
-      btn.textContent = 'Sign In';
-      btn.disabled = false;
-    }, 700);
+    } catch(e) {
+      err.textContent = 'Connection error. Please try again.';
+      err.classList.add('show');
+    }
+
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
+  }
+
+  async function loadParentDashboard() {
+    try {
+      const invoices = await supabaseRequest('invoices?select=*&order=due_date.desc');
+      const overdue = invoices.filter(i => i.status === 'overdue');
+      const unpaid  = invoices.filter(i => i.status !== 'paid');
+      const totalDue = unpaid.reduce((s, i) => s + parseFloat(i.balance_due), 0);
+      document.getElementById('invoiceBadge').textContent = unpaid.length || '';
+    } catch(e) {
+      console.log('Dashboard load error:', e);
+    }
   }
 
   function logout() {
+    window._supabaseToken = null;
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('loginScreen').classList.add('active');
-    document.getElementById('loginEmail').value = 'parent@demo.com';
-    document.getElementById('loginPassword').value = 'demo123';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
     switchLoginTab('parent', document.querySelectorAll('.login-tab')[0]);
   }
 
@@ -1302,17 +1371,4 @@
 
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) overlay.classList.remove('open');
-    });
-  });
-
-  // Enter key login
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('loginScreen').classList.contains('active')) {
-      handleLogin();
-    }
-  });
-</script>
-</body>
-</html>
+    overl
