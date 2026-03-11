@@ -1,6 +1,7 @@
 // ── SUPABASE ──────────────────────────────────────────────
 const SUPABASE_URL = 'https://lwfgwemmyedehztlnypj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3Zmd3ZW1teWVkZWh6dGxueXBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNjU2NTIsImV4cCI6MjA4ODc0MTY1Mn0.I1MuvFcwrGUBaWpkfsBtS1pBqsFOq0vDlK0tzyipfTU';
+const SUPABASE_SERVICE_KEY = 'sb_secret_rtKmiPnSJ8H0V05NjVroDQ_ML-rjRRh';
 
 // Admin credentials — no Supabase needed for admin login
 const ADMIN_EMAIL = 'haleyhitesman@gmail.com';
@@ -265,11 +266,18 @@ async function sendInvite(email, name) {
   try {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/invite`, {
       method:'POST',
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${window._sbToken||SUPABASE_ANON_KEY}`,'Content-Type':'application/json'},
+      headers:{
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type':'application/json'
+      },
       body:JSON.stringify({email, data:{full_name:name}})
     });
     const d = await r.json();
-    if (r.ok) { await sbPost('invite_log',{email,name,status:'pending',sent_at:new Date().toISOString()}); return {success:true}; }
+    if (r.ok) {
+      await sbPost('invite_log',{email,name,status:'pending',sent_at:new Date().toISOString()});
+      return {success:true};
+    }
     return {success:false, error:d.message||d.error_description||'Unknown error'};
   } catch(e) { return {success:false, error:e.message}; }
 }
