@@ -506,7 +506,7 @@ tr:last-child td{border-bottom:none;}
       <div class="contact-info">
         <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-label">Location</div><div class="contact-value">370 N Main St<br>Parowan, Utah 84761</div></div></div>
         <div class="contact-item"><div class="contact-icon">📞</div><div><div class="contact-label">Phone</div><div class="contact-value">(435) 590-8752</div></div></div>
-        <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">Email</div><div class="contact-value"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bed6d3d7d0dbdbccfed6d1cad3dfd7d290ddd1d3">[email&#160;protected]</a></div></div></div>
+        <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">Email</div><div class="contact-value">hmineer@hotmail.com</div></div></div>
         <div class="contact-item"><div class="contact-icon">🕐</div><div><div class="contact-label">Studio Hours</div><div class="contact-value">Mon &amp; Tue: 2:30 – 6:00 PM<br>Thu: By class schedule</div></div></div>
       </div>
       <div class="contact-form">
@@ -730,7 +730,7 @@ tr:last-child td{border-bottom:none;}
       <div class="table-card" style="margin-bottom:24px;">
         <div class="table-card-header"><div class="table-card-title">Bulk Invite — All Families at Once</div></div>
         <div style="padding:24px 28px;">
-          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Paste a list — one parent per line: <strong>Full Name, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5c39313d35301c3d38382e392f2f723f3331">[email&#160;protected]</a></strong></p>
+          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Paste a list — one parent per line: <strong>Full Name, email@address.com</strong></p>
           <textarea id="bulkInviteText" rows="8" style="width:100%;padding:14px;border:1.5px solid var(--border);font-family:monospace;font-size:13px;outline:none;resize:vertical;" placeholder="Sarah Smith, sarah@email.com&#10;Mike Johnson, mike@email.com&#10;Lisa Williams, lisa@email.com"></textarea>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
             <span id="bulkInviteCount" style="font-size:13px;color:var(--gray);">Enter names above to preview</span>
@@ -1210,4 +1210,3 @@ async function resendInvite(email,name) {
 document.getElementById('bulkInviteText').addEventListener('input', function() {
   const lines = this.value.split('\n').filter(l=>l.trim()&&l.includes(',')&&l.includes('@'));
   document.getElementById('bulkInviteCount').textContent = lines.length>0 ? `${lines.length} valid entr${lines.length===1?'y':'ies'} detected` : 'Enter names above
-    
