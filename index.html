@@ -22,6 +22,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--black)
 #portalView,#adminView{display:none;min-height:100vh;}
 #portalView.active,#adminView.active{display:flex;}
 
+/* Hide nav completely when not on home */
+nav.hidden{display:none !important;}
+
 /* ── NAV ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:72px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.08);transition:box-shadow 0.3s;}
 nav.scrolled{box-shadow:0 2px 24px rgba(0,0,0,0.1);}
@@ -174,7 +177,7 @@ footer{background:var(--black);padding:60px 0 32px;}
 .footer-star{width:20px;height:20px;background:var(--red);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);opacity:0.5;}
 
 /* ── PORTAL/ADMIN SHARED ── */
-.sidebar{width:260px;min-height:100vh;background:var(--black);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar{width:260px;min-height:100vh;background:var(--black);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:10;}
 .sidebar-header{padding:28px 24px;border-bottom:1px solid rgba(255,255,255,0.08);}
 .sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
 .sidebar-brand .nav-logo-star{width:26px;height:26px;}
@@ -186,8 +189,8 @@ footer{background:var(--black);padding:60px 0 32px;}
 .user-role{font-size:11px;color:rgba(255,255,255,0.4);}
 .sidebar-nav{padding:16px 0;flex:1;}
 .nav-section-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:700;padding:16px 24px 8px;}
-.nav-item{display:flex;align-items:center;gap:14px;padding:12px 24px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.55);transition:all 0.2s;border-left:3px solid transparent;}
-.nav-item:hover{color:var(--white);background:rgba(255,255,255,0.04);}
+.nav-item{display:flex;align-items:center;gap:14px;padding:12px 24px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.55);transition:all 0.2s;border-left:3px solid transparent;user-select:none;width:100%;}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,0.06);}
 .nav-item.active{color:var(--white);border-left-color:var(--red);background:rgba(200,16,46,0.1);}
 .nav-icon{font-size:16px;width:20px;text-align:center;}
 .nav-badge{margin-left:auto;background:var(--red);color:var(--white);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
@@ -505,7 +508,7 @@ tr:last-child td{border-bottom:none;}
       <div class="contact-info">
         <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-label">Location</div><div class="contact-value">370 N Main St<br>Parowan, Utah 84761</div></div></div>
         <div class="contact-item"><div class="contact-icon">📞</div><div><div class="contact-label">Phone</div><div class="contact-value">(435) 590-8752</div></div></div>
-        <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">Email</div><div class="contact-value">hmineer@hotmail.com</div></div></div>
+        <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">Email</div><div class="contact-value"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e9818480878c8c9ba981869d84888085c78a8684">[email&#160;protected]</a></div></div></div>
         <div class="contact-item"><div class="contact-icon">🕐</div><div><div class="contact-label">Studio Hours</div><div class="contact-value">Mon &amp; Tue: 2:30 – 6:00 PM<br>Thu: By class schedule</div></div></div>
       </div>
       <div class="contact-form">
@@ -729,7 +732,7 @@ tr:last-child td{border-bottom:none;}
       <div class="table-card" style="margin-bottom:24px;">
         <div class="table-card-header"><div class="table-card-title">Bulk Invite — All Families at Once</div></div>
         <div style="padding:24px 28px;">
-          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Paste a list — one parent per line: <strong>Full Name, email@address.com</strong></p>
+          <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">Paste a list — one parent per line: <strong>Full Name, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ee8b838f8782ae8f8a8a9c8b9d9dc08d8183">[email&#160;protected]</a></strong></p>
           <textarea id="bulkInviteText" rows="8" style="width:100%;padding:14px;border:1.5px solid var(--border);font-family:monospace;font-size:13px;outline:none;resize:vertical;" placeholder="Sarah Smith, sarah@email.com&#10;Mike Johnson, mike@email.com&#10;Lisa Williams, lisa@email.com"></textarea>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
             <span id="bulkInviteCount" style="font-size:13px;color:var(--gray);">Enter names above to preview</span>
@@ -772,7 +775,7 @@ tr:last-child td{border-bottom:none;}
           <span style="color:rgba(255,255,255,0.3)"># Stripe</span><br>
           <span style="color:#FF6B6B">STRIPE_PUBLISHABLE_KEY</span>=<span style="color:#4EC9B0">YOUR_STRIPE_KEY_HERE</span>
         </div>
-        <button class="btn btn-red" style="margin-top:20px;" onclick="alert('In production: redirects to QuickBooks OAuth page.')">Connect QuickBooks →</button>
+        <button class="btn btn-red" style="margin-top:20px;" id="qbConnectBtn" onclick="connectQuickBooks()">Connect QuickBooks →</button>
       </div>
     </div>
   </main>
@@ -840,13 +843,4 @@ tr:last-child td{border-bottom:none;}
       <div style="text-align:center;padding:20px 0;">
         <div style="font-size:56px;margin-bottom:16px;">✉️</div>
         <div id="inviteSuccessMessage" style="font-size:15px;line-height:1.7;"></div>
-        <div style="margin-top:20px;padding:16px;background:var(--light);font-size:13px;color:var(--gray);line-height:1.7;">Links expire in <strong>24 hours</strong>. Resend anytime from Invite History.</div>
-      </div>
-    </div>
-    <div class="modal-footer"><button class="btn btn-black" onclick="closeModal('inviteSuccessModal');loadInviteHistory()">View History</button></div>
-  </div>
-</div>
-
-<script src="app.js"></script>
-</body>
-</html>
+        <div style="margin-top:20px;padding:16px;background:var(--light);font-size:13px;color:var(--gray);line-height:1.7;">Links expire in <strong>24 hours</strong>. Resend anytime from Invite History.</d
