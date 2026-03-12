@@ -33,30 +33,26 @@ async function sbPost(table, data) {
 
 // ── VIEW MANAGER ──────────────────────────────────────────
 function showView(name) {
-  // Hide everything
-  document.getElementById('homeView').classList.remove('active');
+  const nav = document.getElementById('navbar');
+
+  // Hide all views
   document.getElementById('homeView').style.display = 'none';
   document.getElementById('loginView').style.display = 'none';
-  document.getElementById('loginView').classList.remove('active');
   document.getElementById('portalView').style.display = 'none';
-  document.getElementById('portalView').classList.remove('active');
   document.getElementById('adminView').style.display = 'none';
-  document.getElementById('adminView').classList.remove('active');
-  document.getElementById('navbar').style.display = 'none';
+
+  // Hide nav by default
+  nav.classList.add('hidden');
 
   if (name === 'home') {
     document.getElementById('homeView').style.display = 'block';
-    document.getElementById('homeView').classList.add('active');
-    document.getElementById('navbar').style.display = 'flex';
+    nav.classList.remove('hidden');
   } else if (name === 'login') {
     document.getElementById('loginView').style.display = 'flex';
-    document.getElementById('loginView').classList.add('active');
   } else if (name === 'portal') {
     document.getElementById('portalView').style.display = 'flex';
-    document.getElementById('portalView').classList.add('active');
   } else if (name === 'admin') {
     document.getElementById('adminView').style.display = 'flex';
-    document.getElementById('adminView').classList.add('active');
   }
   window.scrollTo(0,0);
 }
@@ -242,11 +238,49 @@ window.addEventListener('scroll', () => {
 });
 
 // ── SYNC ANIMATION ────────────────────────────────────────
-function simulateSync() {
-  document.querySelectorAll('.sync-dot').forEach(d => {
-    d.style.background = 'var(--amber)';
-    setTimeout(() => d.style.background = 'var(--green)', 1500);
-  });
+async function connectQuickBooks() {
+  const btn = document.getElementById('qbConnectBtn');
+  if (btn) { btn.textContent = 'Connecting...'; btn.disabled = true; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-sync?action=auth_url`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    const d = await r.json();
+    if (d.url) {
+      window.open(d.url, '_blank');
+    } else {
+      alert('Could not get QuickBooks authorization URL. Make sure the Edge Function is deployed.');
+    }
+  } catch(e) {
+    alert('Connection error: ' + e.message);
+  }
+  if (btn) { btn.textContent = 'Connect QuickBooks →'; btn.disabled = false; }
+}
+
+async function simulateSync() {
+  const dots = document.querySelectorAll('.sync-dot');
+  dots.forEach(d => d.style.background = 'var(--amber)');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-sync`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sync' })
+    });
+    const d = await r.json();
+    if (d.success) {
+      dots.forEach(dot => dot.style.background = 'var(--green)');
+      document.querySelectorAll('.sync-time').forEach(t => t.textContent = 'Just synced');
+      if (d.invoices_synced !== undefined) {
+        alert(`✅ Synced ${d.invoices_synced} invoices from QuickBooks!`);
+      }
+    } else {
+      dots.forEach(dot => dot.style.background = 'var(--red)');
+      alert('Sync error: ' + (d.error || 'Unknown error'));
+    }
+  } catch(e) {
+    dots.forEach(dot => dot.style.background = 'var(--red)');
+    alert('Sync failed: ' + e.message);
+  }
 }
 
 // ── ANNOUNCEMENTS (ADMIN) ─────────────────────────────────
