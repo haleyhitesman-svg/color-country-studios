@@ -33,20 +33,13 @@ async function sbPost(table, data) {
 
 // ── VIEW MANAGER ──────────────────────────────────────────
 function showView(name) {
-  const nav = document.getElementById('navbar');
-
-  // Hide all views
   document.getElementById('homeView').style.display = 'none';
   document.getElementById('loginView').style.display = 'none';
   document.getElementById('portalView').style.display = 'none';
   document.getElementById('adminView').style.display = 'none';
 
-  // Hide nav by default
-  nav.classList.add('hidden');
-
   if (name === 'home') {
     document.getElementById('homeView').style.display = 'block';
-    nav.classList.remove('hidden');
   } else if (name === 'login') {
     document.getElementById('loginView').style.display = 'flex';
   } else if (name === 'portal') {
@@ -234,7 +227,8 @@ function showDay(day, btn) {
 
 // ── NAV SCROLL ────────────────────────────────────────────
 window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  const nav = document.getElementById('navbar');
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 20);
 });
 
 // ── SYNC ANIMATION ────────────────────────────────────────
