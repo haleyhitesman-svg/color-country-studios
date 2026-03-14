@@ -205,7 +205,7 @@ function renderAnnouncements(anns) {
 // ── ADMIN DATA ────────────────────────────────────────────
 async function loadAdminInvoices() {
   try {
-    const invoices = await sbGet('invoices', 'select=*,parents(full_name,email)&order=due_date.desc');
+    const invoices = await sbGet('invoices', 'select=*&order=due_date.desc');
     const tb = document.getElementById('adminInvoiceTable');
     if (!tb) return;
     if (!Array.isArray(invoices) || invoices.length === 0) {
@@ -214,8 +214,7 @@ async function loadAdminInvoices() {
     }
     tb.innerHTML = invoices.map(inv => `
       <tr>
-        <td><strong>#${inv.invoice_number || inv.id?.slice(0,6) || '—'}</strong></td>
-        <td>${inv.parents?.full_name || inv.parents?.email || 'Unknown'}</td>
+        <td><strong>#${inv.invoice_number || '—'}</strong></td>
         <td>${inv.description || 'Tuition'}</td>
         <td>$${parseFloat(inv.amount||0).toFixed(2)}</td>
         <td>$${parseFloat(inv.balance_due||0).toFixed(2)}</td>
