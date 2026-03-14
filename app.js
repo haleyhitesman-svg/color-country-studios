@@ -120,6 +120,10 @@ function showAdminPage(id, el) {
   document.querySelectorAll('#adminView .nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   if (el) el.classList.add('active');
+  if (id === 'admin-invoices') loadAdminInvoices();
+  if (id === 'admin-students') loadStudents();
+  if (id === 'admin-invites') loadInviteHistory();
+  if (id === 'admin-announcements') loadAnnouncements();
 }
 
 // ── PORTAL DATA ───────────────────────────────────────────
@@ -196,6 +200,30 @@ function renderAnnouncements(anns) {
       </div>
     </div>
   `).join('');
+}
+
+// ── ADMIN DATA ────────────────────────────────────────────
+async function loadAdminInvoices() {
+  try {
+    const invoices = await sbGet('invoices', 'select=*,parents(full_name,email)&order=due_date.desc');
+    const tb = document.getElementById('adminInvoiceTable');
+    if (!tb) return;
+    if (!Array.isArray(invoices) || invoices.length === 0) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--gray);">No invoices found. Click Sync Now in QuickBooks Setup.</td></tr>';
+      return;
+    }
+    tb.innerHTML = invoices.map(inv => `
+      <tr>
+        <td><strong>#${inv.invoice_number || inv.id?.slice(0,6) || '—'}</strong></td>
+        <td>${inv.parents?.full_name || inv.parents?.email || 'Unknown'}</td>
+        <td>${inv.description || 'Tuition'}</td>
+        <td>$${parseFloat(inv.amount||0).toFixed(2)}</td>
+        <td>$${parseFloat(inv.balance_due||0).toFixed(2)}</td>
+        <td>${inv.due_date ? new Date(inv.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
+        <td><span class="badge ${inv.status==='paid'?'badge-green':inv.status==='overdue'?'badge-red':'badge-amber'}">${inv.status||'unpaid'}</span></td>
+      </tr>
+    `).join('');
+  } catch(e) { console.log('Admin invoice error:', e); }
 }
 
 // ── PAYMENT MODAL ─────────────────────────────────────────
