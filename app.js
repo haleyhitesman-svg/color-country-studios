@@ -398,42 +398,22 @@ document.addEventListener('keydown', e => {
 // ── QUICKBOOKS OAUTH CALLBACK ─────────────────────────────
 (async function handleQBCallback() {
   const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const realmId = params.get('realmId');
-  if (!code || !realmId) return;
+  const success = params.get('qb_success');
+  const error = params.get('qb_error');
+  if (!success && !error) return;
 
-  // Clean the URL so it doesn't re-trigger on refresh
   window.history.replaceState({}, document.title, '/');
 
-  // Show a message while we exchange the code
   const notice = document.createElement('div');
-  notice.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#16A34A;color:white;text-align:center;padding:16px;font-size:15px;font-weight:600;z-index:9999;';
-  notice.textContent = '🔄 Connecting QuickBooks — please wait...';
-  document.body.appendChild(notice);
+  notice.style.cssText = 'position:fixed;top:0;left:0;right:0;color:white;text-align:center;padding:16px;font-size:15px;font-weight:600;z-index:9999;';
 
-  try {
-    const r = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-sync`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ action: 'exchange_code', code, realmId })
-    });
-    const d = await r.json();
-    if (d.success) {
-      notice.style.background = '#16A34A';
-      notice.textContent = '✅ QuickBooks connected successfully! Go to Admin → QuickBooks Setup → Sync Now to import invoices.';
-      setTimeout(() => notice.remove(), 6000);
-    } else {
-      notice.style.background = '#DC2626';
-      notice.textContent = '❌ QuickBooks connection failed: ' + (d.error || 'Unknown error');
-      setTimeout(() => notice.remove(), 6000);
-    }
-  } catch(e) {
+  if (success) {
+    notice.style.background = '#16A34A';
+    notice.textContent = '✅ QuickBooks connected! Log in and go to QuickBooks Setup → Sync Now to import your invoices.';
+  } else {
     notice.style.background = '#DC2626';
-    notice.textContent = '❌ Connection error: ' + e.message;
-    setTimeout(() => notice.remove(), 6000);
+    notice.textContent = '❌ QuickBooks connection failed: ' + decodeURIComponent(error);
   }
+  document.body.appendChild(notice);
+  setTimeout(() => notice.remove(), 8000);
 })();
